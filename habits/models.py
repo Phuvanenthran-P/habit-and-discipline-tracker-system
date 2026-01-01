@@ -65,3 +65,20 @@ def current_streak(self):
         day -= timedelta(days=1)
 
     return streak
+
+def last_completed_date(self):
+    completion = self.completions.order_by('-date').first()
+    return completion.date if completion else None
+
+def missed_days(self):
+    last_done = self.last_completed_date()
+    if not last_done:
+        return None
+
+    today = timezone.now().date()
+    delta = (today - last_done).days
+
+    if delta <= 1:
+        return 0
+
+    return delta - 1

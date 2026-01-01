@@ -11,21 +11,44 @@
     {% csrf_token %}
     <button type="submit">Logout</button>
 </form>
-
 <ul>
 {% for habit in habits %}
-    <li>
+    <li style="margin-bottom: 20px;">
         <strong>{{ habit.name }}</strong>
-        — 🔥 {{ habit.current_streak }} day streak
+
+        <br>
+        🔥 Streak: {{ habit.current_streak }} days
+
+        {% if habit.missed_days %}
+            <br>
+            ⚠️ Missed {{ habit.missed_days }} day{{ habit.missed_days|pluralize }}
+        {% endif %}
+
+        {% if habit.last_completed_date %}
+            <br>
+            📅 Last done: {{ habit.last_completed_date }}
+        {% else %}
+            <br>
+            ❌ Never completed
+        {% endif %}
+
+        <!-- Progress bar -->
+        <div style="width: 200px; background: #eee; height: 10px; margin-top: 6px;">
+            <div style="
+                width: {{ habit.current_streak|default:0 }}0%;
+                max-width: 100%;
+                height: 10px;
+                background: green;">
+            </div>
+        </div>
+
+        <br>
 
         {% if habit.id in completed_habits %}
-            ✅ Done
+            ✅ Done today
         {% else %}
             <a href="{% url 'habit_complete' habit.id %}">Mark Done</a>
         {% endif %}
-
-        <a href="{% url 'habit_update' habit.id %}">Edit</a>
-        <a href="{% url 'habit_delete' habit.id %}">Delete</a>
     </li>
 {% empty %}
     <li>No habits yet.</li>

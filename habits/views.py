@@ -4,15 +4,16 @@ from .models import Habit
 from .forms import HabitForm
 from django.utils import timezone
 from .models import HabitCompletion
+from datetime import date
 
 
 @login_required
 def dashboard(request):
     habits = Habit.objects.filter(user=request.user)
-    today = timezone.now().date()
+    today = date.today()
 
     completed_habits = HabitCompletion.objects.filter(
-        habit__in=habits,
+        user=request.user,
         date=today
     ).values_list('habit_id', flat=True)
 
