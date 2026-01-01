@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.utils import timezone
 
 class Habit(models.Model):
     PRIORITY_CHOICES = [
@@ -39,6 +39,17 @@ class HabitLog(models.Model):
     class Meta:
         unique_together = ('habit', 'date')
         ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.habit.name} - {self.date}"
+
+
+class HabitCompletion(models.Model):
+    habit = models.ForeignKey(Habit, on_delete=models.CASCADE)
+    date = models.DateField(default=timezone.now)
+
+    class Meta:
+        unique_together = ('habit', 'date')
 
     def __str__(self):
         return f"{self.habit.name} - {self.date}"

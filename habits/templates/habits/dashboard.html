@@ -16,6 +16,13 @@
 {% for habit in habits %}
     <li>
         {{ habit.name }}
+
+        {% if habit.id in completed_habits %}
+            ✅ Done
+        {% else %}
+            <a href="{% url 'habit_complete' habit.id %}">Mark Done</a>
+        {% endif %}
+
         <a href="{% url 'habit_update' habit.id %}">Edit</a>
         <a href="{% url 'habit_delete' habit.id %}">Delete</a>
     </li>
@@ -23,5 +30,6 @@
     <li>No habits yet.</li>
 {% endfor %}
 </ul>
+
 </body>
 </html>
