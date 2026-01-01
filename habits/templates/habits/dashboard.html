@@ -4,10 +4,24 @@
 <h1>Habit Dashboard</h1>
 
 <p>Welcome, {{ request.user.username }}</p>
+<h1>Your Habits</h1>
+
+<a href="{% url 'habit_create' %}"> Add Habit</a>
 <form method="post" action="{% url 'logout' %}">
     {% csrf_token %}
     <button type="submit">Logout</button>
 </form>
 
+<ul>
+{% for habit in habits %}
+    <li>
+        {{ habit.name }}
+        <a href="{% url 'habit_update' habit.id %}">Edit</a>
+        <a href="{% url 'habit_delete' habit.id %}">Delete</a>
+    </li>
+{% empty %}
+    <li>No habits yet.</li>
+{% endfor %}
+</ul>
 </body>
 </html>
