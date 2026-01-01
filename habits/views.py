@@ -23,6 +23,7 @@ def dashboard(request):
 
 
 
+
 @login_required
 def habit_create(request):
     if request.method == 'POST':

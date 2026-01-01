@@ -15,7 +15,8 @@
 <ul>
 {% for habit in habits %}
     <li>
-        {{ habit.name }}
+        <strong>{{ habit.name }}</strong>
+        — 🔥 {{ habit.current_streak }} day streak
 
         {% if habit.id in completed_habits %}
             ✅ Done
@@ -30,6 +31,7 @@
     <li>No habits yet.</li>
 {% endfor %}
 </ul>
+
 
 </body>
 </html>

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from datetime import timedelta
 
 class Habit(models.Model):
     PRIORITY_CHOICES = [
@@ -53,3 +54,14 @@ class HabitCompletion(models.Model):
 
     def __str__(self):
         return f"{self.habit.name} - {self.date}"
+
+def current_streak(self):
+    today = timezone.now().date()
+    streak = 0
+    day = today
+
+    while HabitCompletion.objects.filter(habit=self, date=day).exists():
+        streak += 1
+        day -= timedelta(days=1)
+
+    return streak
