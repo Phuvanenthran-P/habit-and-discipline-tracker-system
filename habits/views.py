@@ -1,28 +1,27 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import Habit
 from .forms import HabitForm
 from django.utils import timezone
-from .models import HabitCompletion
 from datetime import date
-
+from django.contrib.auth.decorators import login_required
+from .models import Habit, HabitCompletion
 
 @login_required
 def dashboard(request):
-    habits = Habit.objects.filter(user=request.user)
     today = date.today()
 
-    completed_habits = HabitCompletion.objects.filter(
-        user=request.user,
+    habits = Habit.objects.filter(user=request.user)
+
+    completed_today = HabitCompletion.objects.filter(
+        habit__user=request.user,
         date=today
-    ).values_list('habit_id', flat=True)
+    ).values_list("habit_id", flat=True)
 
-    return render(request, 'habits/dashboard.html', {
-        'habits': habits,
-        'completed_habits': completed_habits,
-    })
+    context = {
+        "habits": habits,
+        "completed_habits": set(completed_today),
+    }
 
-
+    return render(request, "habits/dashboard.html", context)
 
 
 @login_required
