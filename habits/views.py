@@ -124,14 +124,21 @@ def mark_complete(request, pk):
     habit = get_object_or_404(Habit, pk=pk, user=request.user)
     today = timezone.now().date()
 
-    obj, created = HabitCompletion.objects.get_or_create(
-        habit=habit,
-        date=today,
-    )
+    profile = request.user.userprofile
+    current_load = today_load(request.user)
 
-    if created:
-        habit.auto_tune_difficulty()
+    if current_load + habit.load_cost() > profile.daily_load_cap:
+        # Too much load → decay instead of reward
+        habit.decay_momentum()
+        habit.save()
+        return redirect("dashboard")
+
+    HabitCompletion.objects.get_or_create(habit=habit, date=today)
+
+    habit.decay_momentum()
+    habit.gain_momentum()
+    habit.auto_tune_difficulty()
+    habit.save()
 
     return redirect("dashboard")
 
-#
