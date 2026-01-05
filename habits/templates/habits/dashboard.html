@@ -10,7 +10,7 @@
 
 <a href="{% url 'habit_create' %}">➕ Add Habit</a>
 
-<form method="post" action="{% url 'logout' %}">
+<form method="post" action="{% url 'logout' %}" style="display:inline;">
     {% csrf_token %}
     <button type="submit">Logout</button>
 </form>
@@ -19,13 +19,14 @@
 
 {% if has_burnout_risk %}
 <p style="color:red;">
-⚠️ You are at risk of burnout. Consider reducing intensity.
+⚠️ You are at risk of burnout. Reduce intensity or take recovery days.
 </p>
 {% endif %}
 
 <h2>🔥 Discipline Score: {{ total_score }}</h2>
 
 <h2>📊 Consistency Index (30 days): {{ consistency_score }}%</h2>
+<p>
 {% if consistency_score >= 80 %}
 🟢 Excellent
 {% elif consistency_score >= 50 %}
@@ -33,6 +34,7 @@
 {% else %}
 🔴 Needs Work
 {% endif %}
+</p>
 
 <h3>📈 Last 7 Days</h3>
 <ul>
@@ -58,10 +60,13 @@ Trend:
 
 <ul>
 {% for habit in habits %}
-<li style="list-style:none; margin-bottom:20px;">
+<li style="list-style:none; margin-bottom:25px;">
+
     <strong>{{ habit.name }}</strong><br>
 
-    🧠 Insight: {{ habit.insight_label }}<br>
+    ⚙️ Difficulty: {{ habit.get_difficulty_display }}<br>
+    🎯 Priority: {{ habit.get_priority_display }}<br>
+
     🔥 Streak: {{ habit.current_streak }} day{{ habit.current_streak|pluralize }}<br>
 
     {% if habit.missed_days %}
@@ -74,15 +79,17 @@ Trend:
         ❌ Never completed<br>
     {% endif %}
 
-    <div style="width:220px;background:#ddd;height:10px;">
+    <!-- Progress bar -->
+    <div style="width:220px;background:#ddd;height:10px;margin:6px 0;">
         <div style="width:{{ habit.streak_percentage }}%;height:10px;background:green;"></div>
     </div>
 
     {% if habit.id in completed_habits %}
         ✅ Done today
     {% else %}
-        <a href="{% url 'habit_complete' habit.id %}">Mark Done</a>
+        <a href="{% url 'habit_complete' habit.id %}">✔ Mark Done</a>
     {% endif %}
+
 </li>
 {% empty %}
 <li>No habits yet.</li>

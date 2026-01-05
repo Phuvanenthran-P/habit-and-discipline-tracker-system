@@ -11,9 +11,16 @@ class Habit(models.Model):
         ("high", "High"),
     ]
 
+    DIFFICULTY_CHOICES = [
+        ("easy", "Easy"),
+        ("normal", "Normal"),
+        ("hard", "Hard"),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="habits")
     name = models.CharField(max_length=100)
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default="low")
+    difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default="normal")
     weight = models.PositiveIntegerField(help_text="1 (low) to 5 (high)")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -21,7 +28,7 @@ class Habit(models.Model):
     def __str__(self):
         return self.name
 
-    # ---------- CORE LOGIC ----------
+    # ---------- STREAK LOGIC ----------
 
     def current_streak(self):
         today = timezone.now().date()
@@ -46,44 +53,55 @@ class Habit(models.Model):
         delta = (timezone.now().date() - last).days
         return max(0, delta - 1)
 
+    # ---------- SCORING ----------
+
     def priority_multiplier(self):
-        mapping = {
+        return {
             "low": 1,
             "medium": 2,
             "high": 3,
-        }
-        return mapping.get(self.priority, 1)
+        }.get(self.priority, 1)
+
+    def difficulty_multiplier(self):
+        return {
+            "easy": 0.8,
+            "normal": 1.0,
+            "hard": 1.3,
+        }.get(self.difficulty, 1.0)
 
     def discipline_score(self):
-        base = self.weight * self.priority_multiplier()
-        score = (self.current_streak() * base) - (self.missed_days() * base)
-        return max(score, 0)
+        return self.weight * self.priority_multiplier() * self.difficulty_multiplier()
 
-    # ---------- STAGE 11 INTELLIGENCE ----------
+    # ---------- INTELLIGENCE ----------
 
     def burnout_risk(self):
         if self.priority == "high" and self.weight >= 4 and self.current_streak() >= 10:
             return "high"
         return "normal"
 
-    def insight_label(self):
-        streak = self.current_streak()
-        missed = self.missed_days()
-
-        if streak >= 14:
-            return "Elite consistency"
-        if missed >= 3:
-            return "Needs recovery"
-        return "On track"
-
     def streak_percentage(self):
         return min(self.current_streak() * 10, 100)
 
+    def auto_tune_difficulty(self):
+        """
+        AI-lite difficulty tuning.
+        Called ONLY after a successful completion.
+        """
+        streak = self.current_streak()
+        missed = self.missed_days()
+
+        if streak >= 14 and missed == 0:
+            self.difficulty = "hard"
+        elif missed >= 3:
+            self.difficulty = "easy"
+        else:
+            self.difficulty = "normal"
+
+        self.save(update_fields=["difficulty"])
+
 
 class HabitCompletion(models.Model):
-    habit = models.ForeignKey(
-        Habit, on_delete=models.CASCADE, related_name="completions"
-    )
+    habit = models.ForeignKey(Habit, on_delete=models.CASCADE, related_name="completions")
     date = models.DateField()
 
     class Meta:
